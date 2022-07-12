@@ -211,7 +211,7 @@ describe('Users (e2e)', () => {
       expect(response.status).toBe(StatusCodes.BAD_REQUEST);
     });
 
-    it('should respond with BAD_REQUEST status code in case of invalid dto', async () => {
+    it('should respond with BAD_REQUEST status code in case of invalid dtos', async () => {
       const response = await unauthorizedRequest
         .put(usersRoutes.update(randomUUID))
         .set(commonHeaders)
