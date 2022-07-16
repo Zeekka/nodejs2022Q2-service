@@ -7,6 +7,8 @@ import { UserValidator } from './user.validator.js';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { UserResponseDto } from '../dtos/user.responseDto.js';
 import { NotFoundError } from 'rxjs';
+import { UpdatePasswordDto } from '../dtos/updatePassword.dto.js';
+import { ForbiddenError } from '../../../errors/forbidden.error.js';
 
 let users: User[] = [];
 
@@ -19,7 +21,7 @@ export class UserRepository {
   }
 
   async createUser(userDto: CreateUserDto): Promise<UserResponseDto> {
-    if (this.userValidator.validateCreateDto(userDto)) {
+    if (!this.userValidator.isValidateCreateDto(userDto)) {
       throw new ValidationError(`Error validating createUserDto`, userDto);
     }
     if (!this.userValidator.isUniqueLogin(await this.getAll(), userDto.login)) {
@@ -51,6 +53,51 @@ export class UserRepository {
     if (!user) {
       throw new NotFoundError(`User with id: ${id} not found`);
     }
+    return new UserResponseDto(user);
+  }
+
+  async updatePassword(
+    id: string,
+    updatePasswordDto: UpdatePasswordDto,
+  ): Promise<UserResponseDto> {
+    if (!validate(id)) {
+      throw new ValidationError(`Provided id: ${id} is not valid`, id);
+    }
+
+    if (this.userValidator.isUpdatePasswordPayloadValid(updatePasswordDto)) {
+      throw new ValidationError(
+        'Password update request is not valid',
+        'Request body is not valid',
+      );
+    }
+    const user: User = users.find((user) => user.id === id);
+    if (!user) {
+      throw new NotFoundError(`User with id: ${id} not found`);
+    }
+    if (
+      !(await this.userValidator.isValidOldPassword(user, updatePasswordDto))
+    ) {
+      throw new ForbiddenError(`Invalid password for user: ${id}`, id);
+    }
+
+    user.password = await bcrypt.hash(updatePasswordDto.newPassword, 10);
+    user.version++;
+    user.updatedAt = +new Date();
+
+    return new UserResponseDto(user);
+  }
+
+  deleteUser(id: string): UserResponseDto {
+    if (!validate(id)) {
+      throw new ValidationError(`Provided id: ${id} is not valid`, id);
+    }
+    const user: User = users.find((user) => user.id === id);
+    users = users.filter((user) => user.id !== id);
+
+    if (!user) {
+      throw new NotFoundError(`User with id: ${id} not found`);
+    }
+
     return new UserResponseDto(user);
   }
 }
