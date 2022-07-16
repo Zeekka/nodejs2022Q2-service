@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from '../dtos/createUser.dto.js';
 import { User } from '../types/user.interface.js';
+import { UserResponseDto } from '../dtos/user.responseDto.js';
 
 @Injectable()
 export class UserValidator {
@@ -13,7 +14,7 @@ export class UserValidator {
     );
   }
 
-  isUniqueLogin(users: User[], login: string): boolean {
+  isUniqueLogin(users: UserResponseDto[], login: string): boolean {
     for (const user of users) {
       if (user.login === login) {
         return false;

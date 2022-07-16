@@ -11,17 +11,20 @@ import { User } from '../types/user.interface.js';
 import { CreateUserDto } from '../dtos/createUser.dto.js';
 import { DuplicateEntryError } from '../../../errors/duplicateEntry.error.js';
 import { ValidationError } from '../../../errors/validation.error.js';
+import { UserResponseDto } from '../dtos/user.responseDto.js';
 
 @Controller('user')
 export class UserController {
   constructor(private userRepository: UserRepository) {}
   @Get()
-  async getAll(): Promise<User[]> {
+  async getAll(): Promise<UserResponseDto[]> {
     return await this.userRepository.getAll();
   }
 
   @Post()
-  async createUser(@Body() body: CreateUserDto): Promise<User> {
+  async createUser(
+    @Body() body: CreateUserDto,
+  ): Promise<UserResponseDto> | never {
     try {
       return await this.userRepository.createUser(body);
     } catch (error) {

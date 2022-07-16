@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { UserValidator } from './user.validator.js';
 import { ValidationError } from '../../../errors/validation.error.js';
+import { UserResponseDto } from '../dtos/user.responseDto.js';
 
 let users: User[] = [];
 
@@ -12,11 +13,11 @@ let users: User[] = [];
 export class UserRepository {
   constructor(private userValidator: UserValidator) {}
 
-  async getAll() {
-    return users;
+  async getAll(): Promise<UserResponseDto[]> {
+    return users.map((user) => new UserResponseDto(user));
   }
 
-  async createUser(userDto: CreateUserDto): Promise<User> {
+  async createUser(userDto: CreateUserDto): Promise<UserResponseDto> {
     if (this.userValidator.validateCreateDto(userDto)) {
       throw new ValidationError(`Error validating createUserDto`, userDto);
     }
@@ -38,7 +39,6 @@ export class UserRepository {
     };
 
     users.push(user);
-
-    return user;
+    return new UserResponseDto(user);
   }
 }
