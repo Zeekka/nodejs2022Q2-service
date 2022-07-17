@@ -31,14 +31,15 @@ export class UserRepository {
       );
     }
 
+    const createdDate: number = +new Date();
     const id = uuidv4();
     const user: User = {
       id: id,
       login: userDto.login,
       password: await bcrypt.hash(userDto.password, 10),
       version: 1,
-      createdAt: +new Date(),
-      updatedAt: null,
+      createdAt: createdDate,
+      updatedAt: createdDate,
     };
 
     users.push(user);

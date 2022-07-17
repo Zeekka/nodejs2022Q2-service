@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -27,9 +28,7 @@ export class UserController {
   }
 
   @Post()
-  async createUser(
-    @Body() body: CreateUserDto,
-  ): Promise<UserResponseDto> | never {
+  async create(@Body() body: CreateUserDto): Promise<UserResponseDto> | never {
     try {
       return await this.userRepository.createUser(body);
     } catch (error) {
@@ -48,7 +47,7 @@ export class UserController {
   }
 
   @Get(':id')
-  async getOneById(@Param('id') id: string): Promise<UserResponseDto> {
+  async getById(@Param('id') id: string): Promise<UserResponseDto> {
     try {
       return this.userRepository.findOneById(id);
     } catch (error) {
@@ -89,7 +88,8 @@ export class UserController {
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id') id: string) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param('id') id: string) {
     try {
       return this.userRepository.deleteUser(id);
     } catch (error) {
