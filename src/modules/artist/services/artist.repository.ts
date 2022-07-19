@@ -83,7 +83,7 @@ export class ArtistRepository {
     });
 
     if (!updatedArtist) {
-      throw new NotFoundError(`Artist with id: ${id} not found`);
+      throw new NotFoundError(`Album with id: ${id} not found`);
     }
 
     return updatedArtist;
