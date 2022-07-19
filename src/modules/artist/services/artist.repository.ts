@@ -5,12 +5,17 @@ import { CreateArtistDto, UpdateArtistDto } from '../dtos/createArtist.dto.js';
 import { v4 as uuidv4, validate } from 'uuid';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { NotFoundError } from 'rxjs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
 
 let artists: Artist[] = [];
 
 @Injectable()
 export class ArtistRepository {
-  constructor(private artistValidator: ArtistValidator) {}
+  constructor(
+    private artistValidator: ArtistValidator,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async getAll(): Promise<Artist[]> {
     return artists;
@@ -44,6 +49,8 @@ export class ArtistRepository {
     if (!artist) {
       throw new NotFoundError(`Artist with id: ${id} not found`);
     }
+
+    this.eventEmitter.emit('artist.deleted', new ArtistDeletedEvent(artist));
 
     return artist;
   }

@@ -6,12 +6,18 @@ import { v4 as uuidv4, validate } from 'uuid';
 import { AlbumValidator } from './album.validator.js';
 import { NotFoundError } from 'rxjs';
 import { UpdateAlbumDto } from '../dtos/updateAlbum.dto.js';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
+import { AlbumDeletedEvent } from '../../../events/album/albumDeleted.event.js';
 
 let albums: Album[] = [];
 
 @Injectable()
 export class AlbumRepository {
-  constructor(private albumValidator: AlbumValidator) {}
+  constructor(
+    private albumValidator: AlbumValidator,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async getAll(): Promise<Album[]> {
     return albums;
@@ -43,6 +49,8 @@ export class AlbumRepository {
     if (!album) {
       throw new NotFoundError(`Album with id: ${id} not found`);
     }
+
+    this.eventEmitter.emit('album.deleted', new AlbumDeletedEvent(album));
 
     return album;
   }
@@ -84,5 +92,14 @@ export class AlbumRepository {
     }
 
     return updatedAlbum;
+  }
+
+  @OnEvent('artist.deleted')
+  async handleArtistDeletedEvent(artistDeletedEvent: ArtistDeletedEvent) {
+    albums.forEach((album) => {
+      if (album.artistId === artistDeletedEvent.getArtistId()) {
+        album.artistId = null;
+      }
+    });
   }
 }

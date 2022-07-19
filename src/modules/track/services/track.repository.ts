@@ -6,6 +6,9 @@ import { ValidationError } from '../../../errors/validation.error.js';
 import { v4 as uuidv4, validate } from 'uuid';
 import { NotFoundError } from 'rxjs';
 import { UpdateTrackDto } from '../dtos/updateTrack.dto.js';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
+import { AlbumDeletedEvent } from '../../../events/album/albumDeleted.event.js';
 
 let tracks: Track[] = [];
 
@@ -86,5 +89,23 @@ export class TrackRepository {
     }
 
     return updatedTrack;
+  }
+
+  @OnEvent('artist.deleted')
+  async handleArtistDeletedEvent(artistDeletedEvent: ArtistDeletedEvent) {
+    tracks.forEach((track) => {
+      if (track.artistId === artistDeletedEvent.getArtistId()) {
+        track.artistId = null;
+      }
+    });
+  }
+
+  @OnEvent('album.deleted')
+  async handleAlbumDeletedEvent(albumDeletedEvent: AlbumDeletedEvent) {
+    tracks.forEach((track) => {
+      if (track.albumId === albumDeletedEvent.getAlbumId()) {
+        track.albumId = null;
+      }
+    });
   }
 }
