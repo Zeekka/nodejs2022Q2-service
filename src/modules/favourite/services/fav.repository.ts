@@ -9,6 +9,10 @@ import { Artist } from '../../artist/types/artist.interface.js';
 import { ArtistRepository } from '../../artist/services/artist.repository.js';
 import { AlbumRepository } from '../../album/services/album.repository.js';
 import { Album } from '../../album/types/album.interface.js';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
+import { AlbumDeletedEvent } from '../../../events/album/albumDeleted.event.js';
+import { TrackDeletedEvent } from '../../../events/track/trackDeleted.event.js';
 
 const favs: FavoritesResponse = {
   albums: [],
@@ -94,5 +98,26 @@ export class FavRepository {
     }
 
     return 'Artist removed from favourites';
+  }
+
+  @OnEvent('artist.deleted')
+  async handleArtistDeletedEvent(artistDeletedEvent: ArtistDeletedEvent) {
+    favs.artists = favs.artists.filter((artist) => {
+      return artist.id !== artistDeletedEvent.getArtistId();
+    });
+  }
+
+  @OnEvent('album.deleted')
+  async handleAlbumsDeletedEvent(albumDeletedEvent: AlbumDeletedEvent) {
+    favs.albums = favs.albums.filter((album) => {
+      return album.id !== albumDeletedEvent.getAlbumId();
+    });
+  }
+
+  @OnEvent('track.deleted')
+  async handleTrackDeletedEvent(trackDeletedEvent: TrackDeletedEvent) {
+    favs.tracks = favs.tracks.filter((track) => {
+      return track.id !== trackDeletedEvent.getTrackId();
+    });
   }
 }
