@@ -7,7 +7,7 @@ import { AlbumValidator } from './album.validator.js';
 import { NotFoundError } from 'rxjs';
 import { UpdateAlbumDto } from '../dtos/updateAlbum.dto.js';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
+import { TrackDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
 import { AlbumDeletedEvent } from '../../../events/album/albumDeleted.event.js';
 
 let albums: Album[] = [];
@@ -95,7 +95,7 @@ export class AlbumRepository {
   }
 
   @OnEvent('artist.deleted')
-  async handleArtistDeletedEvent(artistDeletedEvent: ArtistDeletedEvent) {
+  async handleArtistDeletedEvent(artistDeletedEvent: TrackDeletedEvent) {
     albums.forEach((album) => {
       if (album.artistId === artistDeletedEvent.getArtistId()) {
         album.artistId = null;

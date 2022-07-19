@@ -6,7 +6,7 @@ import { v4 as uuidv4, validate } from 'uuid';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { NotFoundError } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
+import { TrackDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
 
 let artists: Artist[] = [];
 
@@ -50,7 +50,7 @@ export class ArtistRepository {
       throw new NotFoundError(`Artist with id: ${id} not found`);
     }
 
-    this.eventEmitter.emit('artist.deleted', new ArtistDeletedEvent(artist));
+    this.eventEmitter.emit('artist.deleted', new TrackDeletedEvent(artist));
 
     return artist;
   }

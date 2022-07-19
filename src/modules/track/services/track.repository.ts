@@ -6,15 +6,19 @@ import { ValidationError } from '../../../errors/validation.error.js';
 import { v4 as uuidv4, validate } from 'uuid';
 import { NotFoundError } from 'rxjs';
 import { UpdateTrackDto } from '../dtos/updateTrack.dto.js';
-import { OnEvent } from '@nestjs/event-emitter';
-import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { AlbumDeletedEvent } from '../../../events/album/albumDeleted.event.js';
+import { TrackDeletedEvent } from '../../../events/track/trackDeleted.event.js';
+import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
 
 let tracks: Track[] = [];
 
 @Injectable()
 export class TrackRepository {
-  constructor(private trackValidator: TrackValidator) {}
+  constructor(
+    private trackValidator: TrackValidator,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async getAll(): Promise<Track[]> {
     return tracks;
@@ -59,6 +63,8 @@ export class TrackRepository {
     if (!track) {
       throw new NotFoundError(`User with id: ${id} not found`);
     }
+
+    this.eventEmitter.emit('track.deleted', new TrackDeletedEvent(track));
 
     return track;
   }
