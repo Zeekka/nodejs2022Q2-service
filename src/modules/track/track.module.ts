@@ -7,5 +7,6 @@ import { TrackValidator } from './services/trackValidator.js';
   imports: [],
   providers: [TrackRepository, TrackValidator],
   controllers: [TrackController],
+  exports: [TrackRepository],
 })
 export class TrackModule {}
