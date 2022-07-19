@@ -5,7 +5,6 @@ import { ValidationError } from '../../../errors/validation.error.js';
 import { v4 as uuidv4, validate } from 'uuid';
 import { AlbumValidator } from './album.validator.js';
 import { NotFoundError } from 'rxjs';
-import { Artist } from '../../artist/types/artist.interface.js';
 import { UpdateAlbumDto } from '../dtos/updateAlbum.dto.js';
 
 let albums: Album[] = [];
@@ -81,7 +80,7 @@ export class AlbumRepository {
     });
 
     if (!updatedAlbum) {
-      throw new NotFoundError(`Artist with id: ${id} not found`);
+      throw new NotFoundError(`Album with id: ${id} not found`);
     }
 
     return updatedAlbum;
