@@ -1,7 +1,18 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { Artist } from '../types/artist.interface.js';
 import { ArtistRepository } from '../services/artist.repository.js';
-import { CreateArtistDto } from '../dtos/createArtist.dto.js';
+import { CreateArtistDto, UpdateArtistDto } from '../dtos/createArtist.dto.js';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { NotFoundError } from 'rxjs';
 
@@ -30,9 +41,49 @@ export class ArtistController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string): Promise<Artist> {
     try {
       return await this.artistRepository.deleteArtist(id);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      } else if (error instanceof NotFoundError) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+
+  @Get(':id')
+  async getById(@Param('id') id: string): Promise<Artist> {
+    try {
+      return await this.artistRepository.findArtistById(id);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      } else if (error instanceof NotFoundError) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      } else {
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateArtistDto: UpdateArtistDto,
+  ): Promise<Artist> {
+    try {
+      return await this.artistRepository.updateArtist(id, updateArtistDto);
     } catch (error) {
       if (error instanceof ValidationError) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

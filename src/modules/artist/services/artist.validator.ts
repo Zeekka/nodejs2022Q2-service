@@ -1,5 +1,6 @@
 import { CreateTrackDto } from '../../track/dtos/createTrack.dto.js';
-import { CreateArtistDto } from '../dtos/createArtist.dto.js';
+import { CreateArtistDto, UpdateArtistDto } from '../dtos/createArtist.dto.js';
+import { type } from 'os';
 
 export class ArtistValidator {
   private createTrackRequiredFields = ['name', 'grammy'];
@@ -14,5 +15,20 @@ export class ArtistValidator {
       this.createTrackRequiredFields,
       artist,
     );
+  }
+
+  isValidUpdateDto(updateArtistDto: UpdateArtistDto) {
+    if (updateArtistDto.name !== undefined && updateArtistDto.name === null) {
+      return false;
+    }
+
+    if (
+      updateArtistDto.grammy !== undefined &&
+      typeof updateArtistDto.grammy !== 'boolean'
+    ) {
+      return false;
+    }
+
+    return true;
   }
 }
