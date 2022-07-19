@@ -7,5 +7,6 @@ import { ArtistValidator } from './services/artist.validator.js';
   imports: [],
   providers: [ArtistRepository, ArtistValidator],
   controllers: [ArtistController],
+  exports: [ArtistRepository],
 })
 export class ArtistModule {}
