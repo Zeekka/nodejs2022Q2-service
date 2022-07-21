@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../types/user.interface.js';
+import { User } from '../models/user.js';
 import { CreateUserDto } from '../dtos/createUser.dto.js';
-import { v4 as uuidv4, validate } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { UserValidator } from './user.validator.js';
 import { ValidationError } from '../../../errors/validation.error.js';
@@ -9,41 +8,39 @@ import { UserResponseDto } from '../dtos/user.responseDto.js';
 import { NotFoundError } from 'rxjs';
 import { UpdatePasswordDto } from '../dtos/updatePassword.dto.js';
 import { ForbiddenError } from '../../../errors/forbidden.error.js';
+import { QueryFailedError, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DuplicateEntryError } from '../../../errors/duplicateEntry.error.js';
+import { validate } from 'uuid';
 
-let users: User[] = [];
+const users: User[] = [];
 
 @Injectable()
 export class UserRepository {
-  constructor(private userValidator: UserValidator) {}
+  constructor(
+    private userValidator: UserValidator,
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
 
   async getAll(): Promise<UserResponseDto[]> {
-    return users.map((user) => new UserResponseDto(user));
+    return this.userRepository.find();
   }
 
-  async createUser(userDto: CreateUserDto): Promise<UserResponseDto> {
-    if (!this.userValidator.isValidateCreateDto(userDto)) {
-      throw new ValidationError(`Error validating createUserDto`, userDto);
+  async createUser(userDto: CreateUserDto): Promise<User> {
+    try {
+      const user: User = await this.userRepository.save(userDto);
+      delete user.password;
+      return user;
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error.driverError.code === '23505'
+      ) {
+        throw new DuplicateEntryError(error.message, userDto);
+      } else {
+        throw error;
+      }
     }
-    if (!this.userValidator.isUniqueLogin(await this.getAll(), userDto.login)) {
-      throw new ValidationError(
-        `Duplicate entry for login ${userDto.login}`,
-        userDto,
-      );
-    }
-
-    const createdDate: number = +new Date();
-    const id = uuidv4();
-    const user: User = {
-      id: id,
-      login: userDto.login,
-      password: await bcrypt.hash(userDto.password, 10),
-      version: 1,
-      createdAt: createdDate,
-      updatedAt: createdDate,
-    };
-
-    users.push(user);
-    return new UserResponseDto(user);
   }
 
   findOneById(id: string): UserResponseDto {
@@ -88,17 +85,25 @@ export class UserRepository {
     return new UserResponseDto(user);
   }
 
-  deleteUser(id: string): UserResponseDto {
-    if (!validate(id)) {
-      throw new ValidationError(`Provided id: ${id} is not valid`, id);
+  async deleteUser(id: string): Promise<void> {
+    let user: User | null;
+    try {
+      user = await this.userRepository.findOneBy({ id });
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error.driverError.code === '22P02'
+      ) {
+        throw new ValidationError(error.message, id);
+      } else {
+        throw error;
+      }
     }
-    const user: User = users.find((user) => user.id === id);
-    users = users.filter((user) => user.id !== id);
 
     if (!user) {
       throw new NotFoundError(`User with id: ${id} not found`);
     }
 
-    return new UserResponseDto(user);
+    await this.userRepository.delete(id);
   }
 }

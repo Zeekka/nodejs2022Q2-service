@@ -12,12 +12,13 @@ import {
 } from '@nestjs/common';
 import { UserRepository } from '../services/user.repository.js';
 import { CreateUserDto } from '../dtos/createUser.dto.js';
-import { DuplicateEntryError } from '../../../errors/duplicateEntry.error.js';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { UserResponseDto } from '../dtos/user.responseDto.js';
 import { NotFoundError } from 'rxjs';
 import { UpdatePasswordDto } from '../dtos/updatePassword.dto.js';
 import { ForbiddenError } from '../../../errors/forbidden.error.js';
+import { DuplicateEntryError } from '../../../errors/duplicateEntry.error.js';
+import { User } from '../models/user.js';
 
 @Controller('user')
 export class UserController {
@@ -28,14 +29,11 @@ export class UserController {
   }
 
   @Post()
-  async create(@Body() body: CreateUserDto): Promise<UserResponseDto> | never {
+  async create(@Body() body: CreateUserDto): Promise<User> | never {
     try {
       return await this.userRepository.createUser(body);
     } catch (error) {
-      if (
-        error instanceof DuplicateEntryError ||
-        error instanceof ValidationError
-      ) {
+      if (error instanceof DuplicateEntryError) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
       } else {
         throw new HttpException(
@@ -91,7 +89,7 @@ export class UserController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string) {
     try {
-      return this.userRepository.deleteUser(id);
+      return await this.userRepository.deleteUser(id);
     } catch (error) {
       if (error instanceof ValidationError) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
