@@ -1,0 +1,33 @@
+version: '3.9'
+
+networks:
+  nodejs_task7:
+
+services:
+  node:
+    env_file:
+      - '.env'
+    build:
+      context: .
+      dockerfile: './.docker/node/Dockerfile'
+    container_name: 'nodejs_task7_app'
+    volumes:
+      - .:/app
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    command: npm run start:dev
+    networks:
+      - nodejs_task7
+  postgres:
+    build:
+      context: .
+      dockerfile: '.docker/postgres/Dockerfile'
+      args:
+        P_USERNAME: ${POSTGRES_USERNAME}
+        P_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - nodejs_task7
