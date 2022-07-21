@@ -1,0 +1,6 @@
+README.md
+test/
+.dockerignore
+.eslintrc.js
+.prettierrc
+doc/
