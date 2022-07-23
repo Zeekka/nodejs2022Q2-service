@@ -1,11 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-  VersionColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, VersionColumn } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 @Entity()
@@ -33,13 +26,9 @@ export class User {
   @VersionColumn()
   version: number;
 
-  @CreateDateColumn()
+  @Column()
   createdAt: number;
 
-  @UpdateDateColumn()
+  @Column()
   updatedAt: number;
-
-  constructor(partial: Partial<User>) {
-    Object.assign(this, partial);
-  }
 }

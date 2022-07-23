@@ -1,4 +1,9 @@
-export interface UpdatePasswordDto {
-  oldPassword: string; // previous password
-  newPassword: string; // new password
+import { IsNotEmpty } from 'class-validator';
+
+export class UpdatePasswordDto {
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @IsNotEmpty()
+  newPassword: string;
 }

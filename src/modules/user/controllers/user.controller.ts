@@ -47,7 +47,7 @@ export class UserController {
   @Get(':id')
   async getById(@Param('id') id: string): Promise<UserResponseDto> {
     try {
-      return this.userRepository.findOneById(id);
+      return await this.userRepository.findOneById(id);
     } catch (error) {
       if (error instanceof ValidationError) {
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
