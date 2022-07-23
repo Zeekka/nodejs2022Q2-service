@@ -7,7 +7,7 @@ import { ArtistModule } from './modules/artist/artist.module.js';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './modules/user/models/user.js';
-import { DataSource } from 'typeorm';
+import { Artist } from './modules/artist/models/artist.js';
 
 @Module({
   imports: [
@@ -19,8 +19,7 @@ import { DataSource } from 'typeorm';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       synchronize: true,
-      entities: [User],
-      autoLoadEntities: true,
+      entities: [User, Artist],
     }),
     EventEmitterModule.forRoot(),
     UserModule,
@@ -32,6 +31,4 @@ import { DataSource } from 'typeorm';
   controllers: [],
   providers: [],
 })
-export class AppModule {
-  constructor(private dataSource: DataSource) {}
-}
+export class AppModule {}

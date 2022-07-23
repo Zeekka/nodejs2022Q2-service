@@ -1,98 +1,66 @@
 import { Injectable } from '@nestjs/common';
-import { Artist } from '../types/artist.interface.js';
-import { ArtistValidator } from './artist.validator.js';
 import { CreateArtistDto, UpdateArtistDto } from '../dtos/createArtist.dto.js';
-import { v4 as uuidv4, validate } from 'uuid';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { NotFoundError } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
-
-let artists: Artist[] = [];
+import { InjectRepository } from '@nestjs/typeorm';
+import { EntityNotFoundError, QueryFailedError, Repository } from 'typeorm';
+import { Artist } from '../models/artist.js';
+import { DuplicateEntryError } from '../../../errors/duplicateEntry.error.js';
 
 @Injectable()
 export class ArtistRepository {
   constructor(
-    private artistValidator: ArtistValidator,
     private eventEmitter: EventEmitter2,
+    @InjectRepository(Artist) private artistRepository: Repository<Artist>,
   ) {}
 
   async getAll(): Promise<Artist[]> {
-    return artists;
+    return this.artistRepository.find();
   }
 
   async createArtist(createArtistDto: CreateArtistDto): Promise<Artist> {
-    if (!this.artistValidator.isValidCreateDto(createArtistDto)) {
-      throw new ValidationError(
-        'Error validating artist data',
-        createArtistDto,
-      );
+    try {
+      return await this.artistRepository.save(createArtistDto);
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        if (error.driverError.code === '23505') {
+          throw new DuplicateEntryError(error.message, createArtistDto);
+        }
+      }
+      throw error;
     }
-
-    const artist: Artist = {
-      id: uuidv4(),
-      name: createArtistDto.name,
-      grammy: createArtistDto.grammy,
-    };
-
-    artists.push(artist);
-    return artist;
   }
 
   async deleteArtist(id: string): Promise<Artist> {
-    if (!validate(id)) {
-      throw new ValidationError(`Provided id: ${id} is not valid`, id);
-    }
-    const artist: Artist = artists.find((artist) => artist.id === id);
-    artists = artists.filter((artist) => artist.id !== id);
-
-    if (!artist) {
-      throw new NotFoundError(`Artist with id: ${id} not found`);
-    }
-
+    const artist: Artist = await this.findArtistById(id);
+    await this.artistRepository.delete(id);
     this.eventEmitter.emit('artist.deleted', new ArtistDeletedEvent(artist));
-
     return artist;
   }
 
   async findArtistById(id: string) {
-    if (!validate(id)) {
-      throw new ValidationError(`Provided id: ${id} is not valid`, id);
+    try {
+      return await this.artistRepository.findOneByOrFail({ id });
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        if (error.driverError.code === '22P02') {
+          throw new ValidationError(error.message, id);
+        }
+      }
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundError(error.message);
+      }
+      throw error;
     }
-    const artist: Artist = artists.find((artist) => artist.id === id);
-    if (!artist) {
-      throw new NotFoundError(`User with id: ${id} not found`);
-    }
-
-    return artist;
   }
 
   async updateArtist(id: string, updateArtistDto: UpdateArtistDto) {
-    if (!validate(id)) {
-      throw new ValidationError('Invalid artist id provided', id);
-    }
-
-    if (!this.artistValidator.isValidUpdateDto(updateArtistDto)) {
-      throw new ValidationError(
-        'Error validating update data',
-        updateArtistDto,
-      );
-    }
-
-    let updatedArtist: Artist | null;
-
-    artists.forEach((artist) => {
-      if (artist.id === id) {
-        updatedArtist = artist;
-        artist.name = updateArtistDto.name ?? artist.name;
-        artist.grammy = updateArtistDto.grammy ?? artist.grammy;
-      }
-    });
-
-    if (!updatedArtist) {
-      throw new NotFoundError(`Album with id: ${id} not found`);
-    }
-
-    return updatedArtist;
+    const artist = await this.findArtistById(id);
+    artist.name = updateArtistDto.name;
+    artist.grammy = updateArtistDto.grammy;
+    await this.artistRepository.save(artist);
+    return artist;
   }
 }
