@@ -1,105 +1,68 @@
-import { Album } from '../types/album.interface.js';
 import { Injectable } from '@nestjs/common';
 import { CreateAlbumDto } from '../dtos/createAlbum.dto.js';
 import { ValidationError } from '../../../errors/validation.error.js';
-import { v4 as uuidv4, validate } from 'uuid';
-import { AlbumValidator } from './album.validator.js';
 import { NotFoundError } from 'rxjs';
 import { UpdateAlbumDto } from '../dtos/updateAlbum.dto.js';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AlbumDeletedEvent } from '../../../events/album/albumDeleted.event.js';
-import { ArtistDeletedEvent } from '../../../events/artist/artistDeleted.event.js';
-
-let albums: Album[] = [];
+import { InjectRepository } from '@nestjs/typeorm';
+import { Album } from '../models/album.js';
+import { EntityNotFoundError, QueryFailedError, Repository } from 'typeorm';
+import { DuplicateEntryError } from '../../../errors/duplicateEntry.error.js';
 
 @Injectable()
 export class AlbumRepository {
   constructor(
-    private albumValidator: AlbumValidator,
     private eventEmitter: EventEmitter2,
+    @InjectRepository(Album) private albumRepository: Repository<Album>,
   ) {}
 
   async getAll(): Promise<Album[]> {
-    return albums;
+    return this.albumRepository.find();
   }
 
   async createAlbum(createAlbumDto: CreateAlbumDto) {
-    if (!(await this.albumValidator.isValidCreateDto(createAlbumDto))) {
-      throw new ValidationError('Error validating artist data', createAlbumDto);
+    try {
+      return await this.albumRepository.save(createAlbumDto);
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        if (error.driverError.code === '23505') {
+          throw new DuplicateEntryError(error.message, createAlbumDto);
+        }
+      }
+      throw error;
     }
-
-    const album: Album = {
-      id: uuidv4(),
-      name: createAlbumDto.name,
-      year: createAlbumDto.year,
-      artistId: createAlbumDto.artistId,
-    };
-
-    albums.push(album);
-    return album;
   }
 
   async deleteAlbum(id: string): Promise<Album> {
-    if (!validate(id)) {
-      throw new ValidationError(`Provided id: ${id} is not valid`, id);
-    }
-    const album: Album = albums.find((album) => album.id === id);
-    albums = albums.filter((album) => album.id !== id);
-
-    if (!album) {
-      throw new NotFoundError(`Album with id: ${id} not found`);
-    }
-
+    const album: Album = await this.findAlbumById(id);
+    await this.albumRepository.delete(id);
     this.eventEmitter.emit('album.deleted', new AlbumDeletedEvent(album));
-
     return album;
   }
 
   async findAlbumById(id: string): Promise<Album> {
-    if (!validate(id)) {
-      throw new ValidationError(`Provided id: ${id} is not valid`, id);
+    try {
+      return await this.albumRepository.findOneByOrFail({ id });
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        if (error.driverError.code === '22P02') {
+          throw new ValidationError(error.message, id);
+        }
+      }
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundError(error.message);
+      }
+      throw error;
     }
-    const album: Album = albums.find((album) => album.id === id);
-    if (!album) {
-      throw new NotFoundError(`User with id: ${id} not found`);
-    }
-
-    return album;
   }
 
   async updateAlbum(id: string, updateAlbumDto: UpdateAlbumDto) {
-    if (!validate(id)) {
-      throw new ValidationError('Invalid album id provided', id);
-    }
-
-    if (!(await this.albumValidator.isValidUpdateDto(updateAlbumDto))) {
-      throw new ValidationError('Error validating update data', updateAlbumDto);
-    }
-
-    let updatedAlbum: Album | null;
-
-    albums.forEach((album) => {
-      if (album.id === id) {
-        updatedAlbum = album;
-        album.name = updateAlbumDto.name ?? album.name;
-        album.year = updateAlbumDto.year ?? album.year;
-        album.artistId = updateAlbumDto.artistId ?? album.artistId;
-      }
-    });
-
-    if (!updatedAlbum) {
-      throw new NotFoundError(`Album with id: ${id} not found`);
-    }
-
-    return updatedAlbum;
-  }
-
-  @OnEvent('artist.deleted')
-  async handleArtistDeletedEvent(artistDeletedEvent: ArtistDeletedEvent) {
-    albums.forEach((album) => {
-      if (album.artistId === artistDeletedEvent.getArtistId()) {
-        album.artistId = null;
-      }
-    });
+    const album: Album = await this.findAlbumById(id);
+    album.name = updateAlbumDto.name;
+    album.year = updateAlbumDto.year;
+    album.artistId = updateAlbumDto.artistId;
+    await this.albumRepository.save(album);
+    return album;
   }
 }
