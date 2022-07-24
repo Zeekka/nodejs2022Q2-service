@@ -43,7 +43,7 @@ describe('Tracks (e2e)', () => {
   });
 
   describe('GET', () => {
-    it('should correctly get all tracks', async () => {
+    it('should correctly get all track', async () => {
       const response = await unauthorizedRequest
         .get(tracksRoutes.getAll)
         .set(commonHeaders);
@@ -201,7 +201,7 @@ describe('Tracks (e2e)', () => {
       expect(response.status).toBe(StatusCodes.BAD_REQUEST);
     });
 
-    it('should respond with BAD_REQUEST status code in case of invalid dto', async () => {
+    it('should respond with BAD_REQUEST status code in case of invalid dtos', async () => {
       const creationResponse = await unauthorizedRequest
         .post(tracksRoutes.create)
         .set(commonHeaders)

@@ -162,7 +162,7 @@ describe('artist (e2e)', () => {
       const { id: updatedId, name, grammy } = updateResponse.body;
 
       expect(name).toBe(createArtistDto.name);
-      expect(grammy).toBe(createArtistDto.grammy);
+      expect(grammy).toBe(false);
       expect(validate(updatedId)).toBe(true);
       expect(createdId).toBe(updatedId);
 
@@ -185,7 +185,7 @@ describe('artist (e2e)', () => {
       expect(response.status).toBe(StatusCodes.BAD_REQUEST);
     });
 
-    it('should respond with BAD_REQUEST status code in case of invalid dto', async () => {
+    it('should respond with BAD_REQUEST status code in case of invalid dtos', async () => {
       const creationResponse = await unauthorizedRequest
         .post(artistsRoutes.create)
         .set(commonHeaders)

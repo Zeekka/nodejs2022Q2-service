@@ -338,8 +338,8 @@ paths:
     get:
       tags:
         - Track
-      summary: Get tracks list
-      description: Gets all library tracks list
+      summary: Get track list
+      description: Gets all library track list
       responses:
         200:
           description: Successful operation
@@ -745,7 +745,7 @@ paths:
       tags:
         - Favorites
       summary: Get all favorites
-      description: Gets all favorites movies, tracks and books
+      description: Gets all favorites movies, track and books
       responses:
         200:
           description: Successful operation
