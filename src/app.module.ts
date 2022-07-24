@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './modules/user/models/user.js';
 import { Artist } from './modules/artist/models/artist.js';
 import { Album } from './modules/album/models/album.js';
+import { Track } from './modules/track/models/track.js';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { Album } from './modules/album/models/album.js';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       synchronize: true,
-      entities: [User, Artist, Album],
+      entities: [User, Artist, Album, Track],
     }),
     EventEmitterModule.forRoot(),
     UserModule,
