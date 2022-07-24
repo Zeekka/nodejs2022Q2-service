@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Artist } from '../../artist/models/artist.js';
 import { Album } from '../../album/models/album.js';
 
@@ -10,14 +16,18 @@ export class Track {
   @Column()
   name: string;
 
-  @ManyToOne(() => Artist, (artist) => artist.id, {
+  @Column({ nullable: true })
+  @ManyToOne(() => Artist, {
     onDelete: 'SET NULL',
   })
+  @JoinColumn({ name: 'artistId', referencedColumnName: 'id' })
   artistId: string | null; // refers to Artist
 
-  @ManyToOne(() => Album, (album) => album.id, {
+  @Column({ nullable: true })
+  @ManyToOne(() => Album, {
     onDelete: 'SET NULL',
   })
+  @JoinColumn({ name: 'albumId', referencedColumnName: 'id' })
   albumId: string | null; // refers to Album
 
   @Column()

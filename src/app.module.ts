@@ -10,6 +10,7 @@ import { User } from './modules/user/models/user.js';
 import { Artist } from './modules/artist/models/artist.js';
 import { Album } from './modules/album/models/album.js';
 import { Track } from './modules/track/models/track.js';
+import { FavouritesEntity } from './modules/favourite/models/favourite.js';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { Track } from './modules/track/models/track.js';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       synchronize: true,
-      entities: [User, Artist, Album, Track],
+      entities: [User, Artist, Album, Track, FavouritesEntity],
     }),
     EventEmitterModule.forRoot(),
     UserModule,

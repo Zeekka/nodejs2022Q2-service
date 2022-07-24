@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from '../dtos/createTrack.dto.js';
-import { TrackValidator } from './trackValidator.js';
 import { ValidationError } from '../../../errors/validation.error.js';
 import { NotFoundError } from 'rxjs';
 import { UpdateTrackDto } from '../dtos/updateTrack.dto.js';
@@ -54,7 +53,7 @@ export class TrackRepository {
   async deleteTrack(id: string): Promise<Track> {
     const track: Track = await this.findOneById(id);
     await this.trackRepository.delete(id);
-    this.eventEmitter.emit('artist.deleted', new TrackDeletedEvent(track));
+    this.eventEmitter.emit('track.deleted', new TrackDeletedEvent(track));
     return track;
   }
 
