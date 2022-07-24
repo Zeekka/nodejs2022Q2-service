@@ -3,8 +3,13 @@ version: '3.9'
 networks:
   nodejs_task7:
 
+volumes:
+  dbdata:
+  dblogs:
+
 services:
   node:
+    restart: on-failure
     env_file:
       - '.env'
     build:
@@ -21,6 +26,7 @@ services:
     networks:
       - nodejs_task7
   postgres:
+    restart: on-failure
     build:
       context: .
       dockerfile: '.docker/postgres/Dockerfile'
@@ -30,5 +36,7 @@ services:
         P_DB: ${POSTGRES_DB}
     ports:
       - ${POSTGRES_PORT}:5432
+    volumes:
+      - "dbdata:/var/lib/postgresql/data"
     networks:
       - nodejs_task7

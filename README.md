@@ -75,4 +75,9 @@ For more information, visit: https://code.visualstudio.com/docs/editor/debugging
 1) Выполняешь `npm install`
 2) Создаешь из `.env.example` просто `.env`, где указываешь свои параметры PORT и креды для базы данных
 3) Выполняешь `docker-compose up`
+4) Делаешь truncate всех таблиц
 5) Запускаешь тесты `docker exec -it nodejs_task7_app npm test`
+
+### Образы
+`docker pull zekkaa/nodejs-task7-node:latest`
+`docker pull zekkaa/nodejs-task7-postgres:latest`
