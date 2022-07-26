@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
-import { FavouriteEnum } from '../types/favourite.enum.js';
+import { FavouriteEnum } from '../types/favourite.enum';
 
 @Entity()
 export class FavouritesEntity {

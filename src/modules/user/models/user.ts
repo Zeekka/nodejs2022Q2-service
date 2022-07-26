@@ -11,16 +11,7 @@ export class User {
   })
   login: string;
 
-  @Column({
-    transformer: {
-      to(password) {
-        return bcrypt.hashSync(password, 10);
-      },
-      from(password) {
-        return password;
-      },
-    },
-  })
+  @Column()
   password: string;
 
   @VersionColumn()

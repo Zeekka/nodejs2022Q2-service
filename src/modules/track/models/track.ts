@@ -5,8 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Artist } from '../../artist/models/artist.js';
-import { Album } from '../../album/models/album.js';
+import { Artist } from '../../artist/models/artist';
+import { Album } from '../../album/models/album';
 
 @Entity()
 export class Track {

@@ -6,24 +6,11 @@ import { FavouriteModule } from './modules/favourite/favourite.module.js';
 import { ArtistModule } from './modules/artist/artist.module.js';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './modules/user/models/user.js';
-import { Artist } from './modules/artist/models/artist.js';
-import { Album } from './modules/album/models/album.js';
-import { Track } from './modules/track/models/track.js';
-import { FavouritesEntity } from './modules/favourite/models/favourite.js';
+import { config } from './ormconfig/ormconfig.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.POSTGRES_PORT),
-      username: process.env.POSTGRES_USERNAME,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      synchronize: true,
-      entities: [User, Artist, Album, Track, FavouritesEntity],
-    }),
+    TypeOrmModule.forRoot(config),
     EventEmitterModule.forRoot(),
     UserModule,
     AlbumModule,

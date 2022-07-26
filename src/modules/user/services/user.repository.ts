@@ -34,6 +34,7 @@ export class UserRepository {
       const epoch = Math.ceil(+new Date() / 1000);
       const user: User = await this.userRepository.save({
         ...userDto,
+        password: await bcrypt.hash(userDto.password, 10),
         updatedAt: epoch,
         createdAt: epoch,
       });
