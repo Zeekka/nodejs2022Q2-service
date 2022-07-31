@@ -39,6 +39,7 @@ module.exports = class CreateSchema1658831990739 {
                                  "duration" integer           NOT NULL,
                                  CONSTRAINT "PK_0631b9bcf521f8fab3a15f2c37e" PRIMARY KEY ("id")
                              )`);
+    await queryRunner.query(`create type favourites_entity_entitytype_enum as enum ('track', 'album', 'artist');`)
     await queryRunner.query(`CREATE TABLE "favourites_entity"
                              (
                                  "entityId"   character varying                            NOT NULL,
