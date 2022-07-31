@@ -226,7 +226,6 @@ describe('artist (e2e)', () => {
         .send(createArtistDto);
 
       const { id } = response.body;
-
       expect(response.status).toBe(StatusCodes.CREATED);
 
       const cleanupResponse = await unauthorizedRequest

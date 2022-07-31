@@ -72,19 +72,13 @@ Press <kbd>F5</kbd> to debug.
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
 
 # Как запустить
-
-### Если запускаешь приложение в Docker
-1) Создаешь Dockerfile в корне проекта с таким содержимым
-```
-FROM node:16-alpine
-WORKDIR /app
-```
-2) Билдишь образ контейнера `docker build -t nodejs_task6 .`
-3) Рапускаешь контейнер и входишь в консоль `docker run --network host -v $(pwd):/app nodejs_task6 sh`
-4) Со втрого терминала тоже заходишь в консоль `docker exec -it <id контейнера> sh`
-
-### Если не юзаешь Docker
 1) Выполняешь `npm install`
-2) Создаешь из `.env.example` просто `.env`, где указываешь свои параметры PORT
-3) Запускаешь прилагу `npm start`
-4) Запускаешь тесты `npm test` и за каждый пройтенный тест ставишь 10 баллов
+2) Создаешь из `.env.example` просто `.env`, где указываешь свои параметры PORT и креды для базы данных
+3) Выполняешь `docker-compose up`
+4) Запускаешь миграции чтобы создать схему `docker exec -it nodejs_task7_app npm run typeorm migration:run -- -d ./src/ormconfig/ormconfig.ts`
+5) Запускаешь тесты `docker exec -it nodejs_task7_app npm test`
+Note: Иногда когда запускаешь тесты они могут выполниться так быстро, что createTime будет равно updateTime (создание и обновление записи произошли очень быстро из-за чего timestamp обновился на то же значение, что и валит тест)
+когда это произойдёт нудно очистить таблицы и запустить тесты снова.
+### Образы
+`docker pull zekkaa/nodejs-task7-node:latest`
+`docker pull zekkaa/nodejs-task7-postgres:latest`

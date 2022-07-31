@@ -1,0 +1,42 @@
+version: '3.9'
+
+networks:
+  nodejs_task7:
+
+volumes:
+  dbdata:
+  dblogs:
+
+services:
+  node:
+    restart: on-failure
+    env_file:
+      - '.env'
+    build:
+      context: .
+      dockerfile: './.docker/node/Dockerfile'
+    container_name: 'nodejs_task7_app'
+    volumes:
+      - .:/app
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    command: npm run start:dev
+    networks:
+      - nodejs_task7
+  postgres:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: '.docker/postgres/Dockerfile'
+      args:
+        P_USERNAME: ${POSTGRES_USERNAME}
+        P_PASSWORD: ${POSTGRES_PASSWORD}
+        P_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - "dbdata:/var/lib/postgresql/data"
+    networks:
+      - nodejs_task7
